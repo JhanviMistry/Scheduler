@@ -1,0 +1,70 @@
+
+# Python
+
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+
+venv/
+.env/
+.env.*
+.venv/
+
+
+# OS / Editor
+
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+
+# Logs
+
+*.log
+
+
+# Databases / Local Storage
+
+knowledge_base.db
+*.sqlite
+*.sqlite3
+
+
+# Uploads / Generated Files
+
+uploads/
+*.pdf
+*.txt
+
+
+# ML / Embeddings / Cache
+
+.cache/
+.cache/*
+sentence_transformers/
+huggingface/
+
+
+# FastAPI / Uvicorn
+
+__pypackages__/
+uvicorn.log
+
+
+# Ollama / Local LLM
+
+ollama/
+*.gguf
+
+
+# Misc
+
+.coverage
+pytest_cache/

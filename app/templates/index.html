@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private AI Assistant</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.tailwindcss.com"></script> </head>
+<body class="bg-gray-900 text-white font-sans flex h-screen overflow-hidden">
+
+    <aside class="w-72 bg-gray-800 border-r border-gray-700 flex flex-col p-6">
+        <h2 class="text-xl font-bold mb-8">📚 Knowledge Base</h2>
+        
+        <div class="space-y-4 flex-grow">
+            <label class="block text-sm font-medium text-gray-400">Upload Schedule or PDF</label>
+            <input type="file" id="fileInput" class="hidden">
+            <button onclick="document.getElementById('fileInput').click()" 
+                    class="w-full py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition text-sm">
+                Choose File
+            </button>
+            <button onclick="uploadFile()" id="uploadBtn"
+                    class="w-full py-2 border border-gray-600 hover:border-white rounded-lg transition text-sm">
+                Index Document
+            </button>
+            <p id="uploadStatus" class="text-xs text-center mt-2"></p>
+        </div>
+
+        <div class="text-xs text-gray-500 border-t border-gray-700 pt-4">
+            Connected to: <span class="text-green-500">Ollama (Llama 3.2)</span>
+        </div>
+    </aside>
+
+    <main class="flex-grow flex flex-col relative">
+        <header class="p-4 border-b border-gray-800 text-center">
+            <h1 class="text-lg font-semibold">Local RAG Agent</h1>
+        </header>
+
+        <div id="chatBox" class="flex-grow overflow-y-auto p-6 space-y-4">
+            <div class="bg-gray-800 p-4 rounded-lg max-w-2xl mr-auto text-sm">
+                Hello! I am your local assistant. You can upload your schedule or documents in the sidebar, and I will answer questions based on them.
+            </div>
+        </div>
+
+        <div class="p-6 bg-gray-900">
+            <div class="max-w-3xl mx-auto flex gap-4">
+                <input type="text" id="userInput" placeholder="Ask about your schedule..." 
+                       class="flex-grow bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button onclick="askQuestion()" 
+                        class="px-6 py-3 bg-blue-600 rounded-xl hover:bg-blue-700 font-medium">
+                    Send
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 1. Handle File Uploads
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const status = document.getElementById('uploadStatus');
+            if (!fileInput.files[0]) return alert("Please select a file first");
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            status.innerText = "Indexing...";
+            const response = await fetch('/upload-file/', { method: 'POST', body: formData });
+            const data = await response.json();
+            status.innerText = data.message || "Upload Failed";
+        }
+
+        // 2. Handle Chat Questions
+        async function askQuestion() {
+            const input = document.getElementById('userInput');
+            const chatBox = document.getElementById('chatBox');
+            const query = input.value;
+            if (!query) return;
+
+            // Add User Message UI
+            chatBox.innerHTML += `<div class="bg-blue-900 p-4 rounded-lg max-w-2xl ml-auto text-sm">${query}</div>`;
+            input.value = '';
+
+            // Get AI Response
+            const response = await fetch(`/ask/?query=${encodeURIComponent(query)}`);
+            const data = await response.json();
+
+            // Add AI Message UI
+            const aiMsg = `
+                <div class="bg-gray-800 p-4 rounded-lg max-w-2xl mr-auto text-sm">
+                    <strong>Availability:</strong> ${data.availabilty}<br>
+                    <strong>Next Slot:</strong> ${data.next_available_time_slot}
+                </div>`;
+            chatBox.innerHTML += aiMsg;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
+</body>
+</html>
